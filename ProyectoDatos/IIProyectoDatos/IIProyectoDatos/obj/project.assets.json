@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\XPC\\OneDrive\\Desktop\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj",
+      "projectUniqueName": "C:\\Users\\XPC\\OneDrive\\Desktop\\GitDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj",
       "projectName": "IIProyectoDatos",
-      "projectPath": "C:\\Users\\XPC\\OneDrive\\Desktop\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj",
+      "projectPath": "C:\\Users\\XPC\\OneDrive\\Desktop\\GitDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj",
       "packagesPath": "C:\\Users\\XPC\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\XPC\\OneDrive\\Desktop\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\obj\\",
+      "outputPath": "C:\\Users\\XPC\\OneDrive\\Desktop\\GitDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\XPC\\AppData\\Roaming\\NuGet\\NuGet.Config"
