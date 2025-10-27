@@ -41,7 +41,7 @@ namespace IIProyectoDatos
                     }
                 }
 
-                Console.WriteLine($"Uniendo: {grupos[a].nombre} + {grupos[b].nombre} (d = {menor})");
+                //Console.WriteLine($"Uniendo: {grupos[a].nombre} + {grupos[b].nombre} (d = {menor})");
 
                 var nuevo = new NodoDendrograma($"({grupos[a].nombre}, {grupos[b].nombre})", menor);
                 nuevo.hijos.Add(grupos[a]);

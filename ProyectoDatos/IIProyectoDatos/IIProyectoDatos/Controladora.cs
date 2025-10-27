@@ -4,21 +4,21 @@ public class Controladora
 {
     public void EjecucionPrograma(string rutaCSV, string tipoNormalizador, string tipoDistancia)
     {
-        Console.WriteLine("Leyendo CSV");
+        Console.WriteLine("1. Leyendo CSV");
         var (datos, nombresFilas) = LectorCSV.Leer(rutaCSV); 
 
-        Console.WriteLine("Normalizando datos");
+        Console.WriteLine("2. Normalizando datos");
         var normalizador = FactoryNormalizador.Crear(tipoNormalizador);
         datos = normalizador.Normalizar(datos);
 
-        Console.WriteLine("Calculando matriz de distancias");
+        Console.WriteLine("3. Calculando matriz de distancias");
         var distancia = FactoryDistancia.Crear(tipoDistancia);
         var matriz = GeneradorMatrizDistancia.Calcular(datos, distancia);
 
-        Console.WriteLine("Ejecutando clustering");
+        Console.WriteLine("4. Ejecutando clustering");
         var dendrograma = Clustering.Algoritmo(matriz, nombresFilas); 
 
-        Console.WriteLine("Exportando a JSON");
+        Console.WriteLine("5. Exportando a JSON");
         string escritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         string ruta = Path.Combine(escritorio, "resultado.json");
         ExportadorJson.Exportar(dendrograma, ruta);
