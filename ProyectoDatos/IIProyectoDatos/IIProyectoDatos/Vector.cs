@@ -3,6 +3,7 @@
 public class Vector
 {
     private double[] datos;
+
     public Vector(int tamano)
     {
         datos = new double[tamano];
@@ -18,12 +19,5 @@ public class Vector
     public void Asignar(int pos, double valor)
     {
         datos[pos] = valor;
-    }
-
-    public double[] Arreglo()
-    {
-        var copia = new double[datos.Length];
-        datos.CopyTo(copia, 0);
-        return copia;
     }
 }

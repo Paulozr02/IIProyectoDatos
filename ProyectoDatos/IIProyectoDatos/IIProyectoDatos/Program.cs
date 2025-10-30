@@ -7,7 +7,7 @@ class Program
     static void Main()
     {
         string escritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        string ruta = Path.Combine(escritorio, "movie_dataset.csv"); 
+        string ruta = Path.Combine(escritorio, "datos.csv"); 
 
         Console.WriteLine("Normalizador: 1) MinMax  2) ZScore  3) Log");
         string opcionNorma = Console.ReadLine();
