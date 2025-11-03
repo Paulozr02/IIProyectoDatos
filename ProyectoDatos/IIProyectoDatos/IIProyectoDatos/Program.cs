@@ -11,6 +11,7 @@ class Program
 
         Console.WriteLine("Normalizador: 1) MinMax  2) ZScore  3) Log");
         string opcionNorma = Console.ReadLine();
+            
         opcionNorma = opcionNorma == "1" ? "MinMax" : opcionNorma == "2" ? "ZScore" : "Log";
         string normalizador = opcionNorma;
 

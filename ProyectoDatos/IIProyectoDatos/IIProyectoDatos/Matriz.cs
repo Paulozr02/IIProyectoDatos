@@ -8,8 +8,10 @@ public class Matriz
     {
         matriz = new double[filas, cols];
     }
-    public int filas => matriz.GetLength(0);
-    public int cols => matriz.GetLength(1);
+    public int filas => matriz.GetLength(0); //Dimension de 0 
+    public int cols => matriz.GetLength(1); //Dimension de 1 
+    
+    //Son las dimensiones por predeterminado al crearlo con [,];
 
     public double Obtener(int fila, int colum)
     {

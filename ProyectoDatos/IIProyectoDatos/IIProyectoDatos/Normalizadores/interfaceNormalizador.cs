@@ -1,6 +1,7 @@
 ﻿namespace IIProyectoDatos;
 
 public interface interfaceNormalizador
-{
-    List<Vector> Normalizar(List<Vector> datos);
+{   
+    //Contrato para las demas clases
+    List<Vector> Normalizar(List<Vector> datos); 
 }

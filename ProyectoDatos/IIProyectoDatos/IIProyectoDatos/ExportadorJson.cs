@@ -4,12 +4,15 @@ namespace IIProyectoDatos;
 
 public class ExportadorJson
 {
+    //Responsable de exportar el archivo en tipo JSON, muy importante, al igual que el contenido
     public static void Exportar(NodoDendrograma raiz, string rutaArchivo)
     {
         string json = ConvertirNodo(raiz);
         File.WriteAllText(rutaArchivo, json);
     }
-
+    
+    
+    //Estructura segun ejemplos dados del profesor
     private static string ConvertirNodo(NodoDendrograma nodo)
     {
         StringBuilder sb = new StringBuilder();
