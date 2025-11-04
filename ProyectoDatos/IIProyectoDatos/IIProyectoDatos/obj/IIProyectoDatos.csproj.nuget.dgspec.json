@@ -1,30 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\XPC\\OneDrive\\Desktop\\GitDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj": {}
+    "C:\\Users\\XPC\\OneDrive\\Desktop\\IIProyectoDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj": {}
   },
   "projects": {
-    "C:\\Users\\XPC\\OneDrive\\Desktop\\GitDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj": {
+    "C:\\Users\\XPC\\OneDrive\\Desktop\\IIProyectoDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\XPC\\OneDrive\\Desktop\\GitDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj",
+        "projectUniqueName": "C:\\Users\\XPC\\OneDrive\\Desktop\\IIProyectoDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj",
         "projectName": "IIProyectoDatos",
-        "projectPath": "C:\\Users\\XPC\\OneDrive\\Desktop\\GitDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj",
+        "projectPath": "C:\\Users\\XPC\\OneDrive\\Desktop\\IIProyectoDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\IIProyectoDatos.csproj",
         "packagesPath": "C:\\Users\\XPC\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\XPC\\OneDrive\\Desktop\\GitDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\obj\\",
+        "outputPath": "C:\\Users\\XPC\\OneDrive\\Desktop\\IIProyectoDatos\\ProyectoDatos\\IIProyectoDatos\\IIProyectoDatos\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\XPC\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net9.0"
+          "net9.0-windows"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net9.0": {
-            "targetAlias": "net9.0",
+          "net9.0-windows7.0": {
+            "targetAlias": "net9.0-windows",
             "projectReferences": {}
           }
         },
@@ -41,8 +41,8 @@
         "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
+        "net9.0-windows7.0": {
+          "targetAlias": "net9.0-windows",
           "imports": [
             "net461",
             "net462",
@@ -57,6 +57,9 @@
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
+            },
+            "Microsoft.WindowsDesktop.App.WPF": {
+              "privateAssets": "none"
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Users\\XPC\\.dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
