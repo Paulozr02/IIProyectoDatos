@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -14,25 +15,13 @@ namespace IIProyectoDatos
     {
         private ObservableCollection<FilaDatos> datos;
         private string distanciaSeleccionada = "Euclidiana";
+        private List<string> encabezados;
 
         public MainWindow()
         {
             InitializeComponent();
             datos = new ObservableCollection<FilaDatos>();
-            ConfigurarDataGrid();
-        }
-
-        private void ConfigurarDataGrid()
-        {
-            // Columna de Nombre (obligatoria)
-            DataGridPeliculas.Columns.Add(new DataGridTextColumn
-            {
-                Header = "Nombre",
-                Binding = new System.Windows.Data.Binding("Nombre"),
-                Width = new DataGridLength(200)
-            });
-
-            // Las demás columnas serán agregadas dinámicamente cuando se cargue el CSV
+            encabezados = new List<string>();
             DataGridPeliculas.ItemsSource = datos;
         }
 
@@ -76,14 +65,14 @@ namespace IIProyectoDatos
             if (lineas.Length < 2) return;
 
             // Leer encabezados
-            var encabezados = lineas[0].Split(',').Select(h => h.Trim().Trim('"')).ToList();
+            encabezados = lineas[0].Split(',').Select(h => h.Trim().Trim('"')).ToList();
             
             // Limpiar datos existentes
             datos.Clear();
             DataGridPeliculas.Columns.Clear();
 
-            // Reconfigurar columnas según el CSV
-            ConfigurarColumnasDesdeCSV(encabezados);
+            // Crear columnas dinámicamente
+            CrearColumnas(encabezados);
 
             // Cargar datos
             for (int i = 1; i < lineas.Length; i++)
@@ -102,9 +91,9 @@ namespace IIProyectoDatos
             }
         }
 
-        private void ConfigurarColumnasDesdeCSV(List<string> encabezados)
+        private void CrearColumnas(List<string> encabezados)
         {
-            // Primera columna: Nombre (siempre texto)
+            // Primera columna: Nombre (solo texto)
             DataGridPeliculas.Columns.Add(new DataGridTextColumn
             {
                 Header = encabezados[0],
@@ -112,76 +101,27 @@ namespace IIProyectoDatos
                 Width = new DataGridLength(180)
             });
 
-            // Resto de columnas con ComboBox para normalización
+            // Resto de columnas: Valor numérico + ComboBox de normalización
             for (int i = 1; i < encabezados.Count; i++)
             {
-                int columnaIndex = i; // Captura para el binding
+                int columnaIndex = i;
                 
-                var col = new DataGridTemplateColumn
+                // Columna para el valor
+                DataGridPeliculas.Columns.Add(new DataGridTextColumn
                 {
                     Header = encabezados[i],
-                    Width = new DataGridLength(150)
-                };
+                    Binding = new System.Windows.Data.Binding($"Valores[{columnaIndex}]"),
+                    Width = new DataGridLength(100)
+                });
 
-                // Template para mostrar el valor y el combo de normalización
-                var cellTemplate = new DataTemplate();
-                var stackPanel = new FrameworkElementFactory(typeof(StackPanel));
-                
-                var textBox = new FrameworkElementFactory(typeof(TextBox));
-                textBox.SetBinding(TextBox.TextProperty, 
-                    new System.Windows.Data.Binding($"Valores[{columnaIndex}]"));
-                textBox.SetValue(TextBox.MarginProperty, new Thickness(2));
-                
-                var comboBox = new FrameworkElementFactory(typeof(ComboBox));
-                comboBox.SetBinding(ComboBox.SelectedItemProperty, 
-                    new System.Windows.Data.Binding($"Normalizaciones[{columnaIndex}]"));
-                comboBox.SetValue(ComboBox.MarginProperty, new Thickness(2));
-                comboBox.SetValue(ComboBox.FontSizeProperty, 10.0);
-                
-                var items = new List<string> { "Sin Normalizar", "MinMax", "ZScore", "Log" };
-                foreach (var item in items)
+                // Columna para normalización
+                DataGridPeliculas.Columns.Add(new DataGridComboBoxColumn
                 {
-                    var comboItem = new FrameworkElementFactory(typeof(ComboBoxItem));
-                    comboItem.SetValue(ComboBoxItem.ContentProperty, item);
-                    // Este approach no funciona directamente, necesitamos usar ItemsSource en el code-behind
-                }
-
-                stackPanel.AppendChild(textBox);
-                stackPanel.AppendChild(comboBox);
-                cellTemplate.VisualTree = stackPanel;
-                col.CellTemplate = cellTemplate;
-
-                DataGridPeliculas.Columns.Add(col);
-            }
-
-            // Configurar ItemsSource para los ComboBox después de crear las columnas
-            DataGridPeliculas.LoadingRow += (s, e) =>
-            {
-                if (e.Row.Item is FilaDatos fila)
-                {
-                    ConfigurarComboBoxesEnFila(e.Row, fila);
-                }
-            };
-        }
-
-        private void ConfigurarComboBoxesEnFila(DataGridRow row, FilaDatos fila)
-        {
-            for (int i = 1; i < DataGridPeliculas.Columns.Count; i++)
-            {
-                var presenter = GetVisualChild<DataGridCellsPresenter>(row);
-                if (presenter != null)
-                {
-                    var cell = presenter.ItemContainerGenerator.ContainerFromIndex(i) as DataGridCell;
-                    if (cell != null)
-                    {
-                        var combo = FindVisualChild<ComboBox>(cell);
-                        if (combo != null)
-                        {
-                            combo.ItemsSource = new List<string> { "Sin Normalizar", "MinMax", "ZScore", "Log" };
-                            combo.SelectedIndex = 0;
-                        }
-                    }
-                }
+                    Header = $"Norm {encabezados[i]}",
+                    SelectedItemBinding = new System.Windows.Data.Binding($"Normalizaciones[{columnaIndex}]"),
+                    ItemsSource = new List<string> { "Sin Normalizar", "MinMax", "ZScore", "Log" },
+                    Width = new DataGridLength(120)
+                });
             }
         }
 
@@ -196,49 +136,52 @@ namespace IIProyectoDatos
 
             try
             {
-                // Preparar datos para clustering
+                // Preparar datos
                 var nombres = new List<string>();
+                int numColumnas = datos[0].Valores.Count - 1;
                 var vectores = new List<Vector>();
 
-                // Determinar número de columnas numéricas
-                int numColumnas = datos[0].Valores.Count - 1; // Excluyendo la columna de nombre
-
+                // Extraer nombres y crear vectores
                 foreach (var fila in datos)
                 {
-                    // Guardar nombre (primera columna)
                     nombres.Add(fila.Valores[0]);
-
-                    // Crear vector con valores numéricos
                     var vector = new Vector(numColumnas);
+                    
                     for (int i = 1; i < fila.Valores.Count; i++)
                     {
-                        if (double.TryParse(fila.Valores[i], out double valor))
+                        if (double.TryParse(fila.Valores[i], NumberStyles.Any, CultureInfo.InvariantCulture, out double valor))
                         {
                             vector.Asignar(i - 1, valor);
                         }
                         else
                         {
-                            vector.Asignar(i - 1, 0); // Valor por defecto si no es numérico
+                            vector.Asignar(i - 1, 0);
                         }
                     }
                     vectores.Add(vector);
                 }
 
-                // Normalizar según las selecciones
+                // Normalizar columna por columna
                 for (int col = 1; col < datos[0].Valores.Count; col++)
                 {
-                    var normalizacion = datos[0].Normalizaciones[col];
-                    if (normalizacion != "Sin Normalizar")
+                    var tipoNormalizacion = datos[0].Normalizaciones[col];
+                    
+                    if (tipoNormalizacion != "Sin Normalizar")
                     {
-                        var normalizador = FactoryNormalizador.Crear(normalizacion);
+                        // Extraer todos los valores de esta columna
                         var vectoresColumna = new List<Vector>();
-                        foreach (var v in vectores)
+                        for (int i = 0; i < vectores.Count; i++)
                         {
-                            var temp = new Vector(1);
-                            temp.Asignar(0, v.Obtener(col - 1));
-                            vectoresColumna.Add(temp);
+                            var v = new Vector(1);
+                            v.Asignar(0, vectores[i].Obtener(col - 1));
+                            vectoresColumna.Add(v);
                         }
+
+                        // Normalizar la columna completa
+                        var normalizador = FactoryNormalizador.Crear(tipoNormalizacion);
                         var normalizados = normalizador.Normalizar(vectoresColumna);
+
+                        // Aplicar valores normalizados
                         for (int i = 0; i < vectores.Count; i++)
                         {
                             vectores[i].Asignar(col - 1, normalizados[i].Obtener(0));
@@ -263,8 +206,8 @@ namespace IIProyectoDatos
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al generar JSON: {ex.Message}", "Error", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error al generar JSON:\n{ex.Message}\n\n{ex.StackTrace}", 
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -272,15 +215,19 @@ namespace IIProyectoDatos
         {
             datos.Clear();
             DataGridPeliculas.Columns.Clear();
-            ConfigurarDataGrid();
+            encabezados.Clear();
         }
 
         private void BtnAgregarFila_Click(object sender, RoutedEventArgs e)
         {
-            int numColumnas = DataGridPeliculas.Columns.Count;
-            if (numColumnas > 0)
+            if (encabezados.Count > 0)
             {
-                datos.Add(new FilaDatos(numColumnas));
+                datos.Add(new FilaDatos(encabezados.Count));
+            }
+            else
+            {
+                MessageBox.Show("Primero carga un CSV para definir la estructura", 
+                    "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -289,6 +236,11 @@ namespace IIProyectoDatos
             if (DataGridPeliculas.SelectedItem is FilaDatos filaSeleccionada)
             {
                 datos.Remove(filaSeleccionada);
+            }
+            else
+            {
+                MessageBox.Show("Selecciona una fila para eliminar", 
+                    "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -320,32 +272,6 @@ namespace IIProyectoDatos
 
             return resultado.ToArray();
         }
-
-        // Métodos helper para encontrar controles visuales
-        private static T GetVisualChild<T>(DependencyObject parent) where T : DependencyObject
-        {
-            T child = default(T);
-            int numVisuals = System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);
-            for (int i = 0; i < numVisuals; i++)
-            {
-                var v = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
-                child = v as T ?? GetVisualChild<T>(v);
-                if (child != null) break;
-            }
-            return child;
-        }
-
-        private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
-        {
-            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(obj); i++)
-            {
-                var child = System.Windows.Media.VisualTreeHelper.GetChild(obj, i);
-                if (child is T t) return t;
-                var childOfChild = FindVisualChild<T>(child);
-                if (childOfChild != null) return childOfChild;
-            }
-            return null;
-        }
     }
 
     // Clase para representar una fila de datos
@@ -353,19 +279,6 @@ namespace IIProyectoDatos
     {
         public ObservableCollection<string> Valores { get; set; }
         public ObservableCollection<string> Normalizaciones { get; set; }
-
-        public string Nombre
-        {
-            get => Valores.Count > 0 ? Valores[0] : "";
-            set
-            {
-                if (Valores.Count > 0)
-                {
-                    Valores[0] = value;
-                    OnPropertyChanged(nameof(Nombre));
-                }
-            }
-        }
 
         public FilaDatos(int numColumnas)
         {
