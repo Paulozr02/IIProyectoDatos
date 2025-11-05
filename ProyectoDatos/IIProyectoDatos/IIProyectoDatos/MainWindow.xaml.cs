@@ -16,12 +16,14 @@ namespace IIProyectoDatos
         private ObservableCollection<FilaDatos> datos;
         private string distanciaSeleccionada = "Euclidiana";
         private List<string> encabezados;
+        private Dictionary<int, string> normalizacionPorColumna; // Guarda la normalización por columna
 
         public MainWindow()
         {
             InitializeComponent();
             datos = new ObservableCollection<FilaDatos>();
             encabezados = new List<string>();
+            normalizacionPorColumna = new Dictionary<int, string>();
             DataGridPeliculas.ItemsSource = datos;
         }
 
@@ -70,6 +72,13 @@ namespace IIProyectoDatos
             // Limpiar datos existentes
             datos.Clear();
             DataGridPeliculas.Columns.Clear();
+            normalizacionPorColumna.Clear();
+
+            // Inicializar normalización por defecto
+            for (int i = 1; i < encabezados.Count; i++)
+            {
+                normalizacionPorColumna[i] = "Sin Normalizar";
+            }
 
             // Crear columnas dinámicamente
             CrearColumnas(encabezados);
@@ -98,29 +107,50 @@ namespace IIProyectoDatos
             {
                 Header = encabezados[0],
                 Binding = new System.Windows.Data.Binding($"Valores[0]"),
-                Width = new DataGridLength(180)
+                Width = new DataGridLength(150)
             });
 
-            // Resto de columnas: Valor numérico + ComboBox de normalización
+            // Resto de columnas con header personalizado (valor + combobox)
             for (int i = 1; i < encabezados.Count; i++)
             {
                 int columnaIndex = i;
                 
-                // Columna para el valor
+                // Crear el header con ComboBox
+                var stackPanel = new StackPanel { Orientation = Orientation.Vertical };
+                
+                var txtHeader = new TextBlock 
+                { 
+                    Text = encabezados[i], 
+                    FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(0, 0, 0, 5),
+                    TextAlignment = TextAlignment.Center
+                };
+                
+                var comboNorm = new ComboBox
+                {
+                    ItemsSource = new List<string> { "Sin Normalizar", "MinMax", "ZScore", "Log" },
+                    SelectedIndex = 0,
+                    Width = 120,
+                    Tag = columnaIndex
+                };
+                
+                comboNorm.SelectionChanged += (s, e) =>
+                {
+                    if (s is ComboBox cb && cb.Tag is int idx)
+                    {
+                        normalizacionPorColumna[idx] = cb.SelectedItem.ToString();
+                    }
+                };
+                
+                stackPanel.Children.Add(txtHeader);
+                stackPanel.Children.Add(comboNorm);
+
+                // Columna con el header personalizado
                 DataGridPeliculas.Columns.Add(new DataGridTextColumn
                 {
-                    Header = encabezados[i],
+                    Header = stackPanel,
                     Binding = new System.Windows.Data.Binding($"Valores[{columnaIndex}]"),
-                    Width = new DataGridLength(100)
-                });
-
-                // Columna para normalización
-                DataGridPeliculas.Columns.Add(new DataGridComboBoxColumn
-                {
-                    Header = $"Norm {encabezados[i]}",
-                    SelectedItemBinding = new System.Windows.Data.Binding($"Normalizaciones[{columnaIndex}]"),
-                    ItemsSource = new List<string> { "Sin Normalizar", "MinMax", "ZScore", "Log" },
-                    Width = new DataGridLength(120)
+                    Width = new DataGridLength(140)
                 });
             }
         }
@@ -161,10 +191,12 @@ namespace IIProyectoDatos
                     vectores.Add(vector);
                 }
 
-                // Normalizar columna por columna
-                for (int col = 1; col < datos[0].Valores.Count; col++)
+                // Normalizar columna por columna según la selección del ComboBox
+                for (int col = 1; col < encabezados.Count; col++)
                 {
-                    var tipoNormalizacion = datos[0].Normalizaciones[col];
+                    if (!normalizacionPorColumna.ContainsKey(col)) continue;
+                    
+                    var tipoNormalizacion = normalizacionPorColumna[col];
                     
                     if (tipoNormalizacion != "Sin Normalizar")
                     {
@@ -181,7 +213,7 @@ namespace IIProyectoDatos
                         var normalizador = FactoryNormalizador.Crear(tipoNormalizacion);
                         var normalizados = normalizador.Normalizar(vectoresColumna);
 
-                        // Aplicar valores normalizados
+                        // Aplicar valores normalizados de vuelta
                         for (int i = 0; i < vectores.Count; i++)
                         {
                             vectores[i].Asignar(col - 1, normalizados[i].Obtener(0));
@@ -216,6 +248,7 @@ namespace IIProyectoDatos
             datos.Clear();
             DataGridPeliculas.Columns.Clear();
             encabezados.Clear();
+            normalizacionPorColumna.Clear();
         }
 
         private void BtnAgregarFila_Click(object sender, RoutedEventArgs e)
@@ -274,21 +307,18 @@ namespace IIProyectoDatos
         }
     }
 
-    // Clase para representar una fila de datos
+    // Clase simplificada para representar una fila de datos
     public class FilaDatos : INotifyPropertyChanged
     {
         public ObservableCollection<string> Valores { get; set; }
-        public ObservableCollection<string> Normalizaciones { get; set; }
 
         public FilaDatos(int numColumnas)
         {
             Valores = new ObservableCollection<string>();
-            Normalizaciones = new ObservableCollection<string>();
             
             for (int i = 0; i < numColumnas; i++)
             {
                 Valores.Add("");
-                Normalizaciones.Add("Sin Normalizar");
             }
         }
 
